@@ -40,9 +40,9 @@ pipeline{
 
         stage{
             steps("docker push"){
-                sh " // This step should not normally be used in your script. Consult the inline help for details.
+            
 withDockerRegistry(credentialsId: 'DOC_CRED', url: 'https://index.docker.io/v1/') {
-                sh " docker push umarsharief07/ultimate-cicd:${BUILD_NUMBER}
+                sh " docker push umarsharief07/ultimate-cicd:${BUILD_NUMBER}"
     
 }
     }
