@@ -42,8 +42,7 @@ Pipeline{
                 sh "docker run -d -p 5656:5656 python:new"
             }
         }
-        }
-
-        }
     }
-}
+ }
+    
+
