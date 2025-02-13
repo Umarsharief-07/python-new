@@ -31,13 +31,22 @@ pipeline{
                 sh ""
                 sh "sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin"
                 sh "sudo chmod 777 /var/run/docker.sock"
-                sh "docker build -t python:${BUILD_NUMBER} ."
-                //sh "docker stop 
-                sh "docker run -d --name python -p 5757:5000 python:${BUILD_NUMBER}"
+                sh "docker build -t umarsharief07/ultimate-cicd:${BUILD_NUMBER} ."
+                sh "docker stop python && docker rm python"
+                sh "docker run -d --name python -p 5757:5000 umarsharief07/ultimate-cicd:${BUILD_NUMBER}"
                 
             }
         }
+
+        stage{
+            steps("docker push"){
+                sh " // This step should not normally be used in your script. Consult the inline help for details.
+withDockerRegistry(credentialsId: 'DOC_CRED', url: 'https://index.docker.io/v1/') {
+                sh " docker push umarsharief07/ultimate-cicd:${BUILD_NUMBER}
+    
+}
     }
  }
-    
+    }
+}    
 
