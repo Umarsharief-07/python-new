@@ -31,8 +31,10 @@ pipeline{
                 sh ""
                 sh "sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin"
                 sh "sudo chmod 777 /var/run/docker.sock"
-                sh "docker build -t python:try-123 ."
-                sh "docker run -d -p 5757:5000 python:try-123"
+                sh "docker build -t python:${BUILD_NUMBER}."
+                //sh "docker stop 
+                sh "docker run -d --name python -p 5757:5000 python:${BUILD_NUMBER}"
+                
             }
         }
     }
