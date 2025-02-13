@@ -3,13 +3,18 @@ Pipeline{
     stages{
         stage("checkout"){
             steps{
+                checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/Umarsharief-07/python-new.git']])
 
             }
         }
 
         stage("Depencies install"){
-            steps{
-                pip install 
+                steps {
+                script {
+                    // Ensure virtualenv is used (optional)
+                    sh 'python -m venv venv'  // Create a virtual environment
+                    sh './venv/bin/pip install -r requirements.txt'  // Install dependencies inside virtualenv
+                }
             }
         }
 
