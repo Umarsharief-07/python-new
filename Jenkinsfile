@@ -8,15 +8,7 @@ pipeline{
             }
         }
 
-        stage("Depencies install"){
-                steps {
-                script {
-                    // Ensure virtualenv is used (optional)
-                    sh 'python -m venv venv'  // Create a virtual environment
-                    sh './venv/bin/pip install -r requirements.txt'  // Install dependencies inside virtualenv
-                }
-            }
-        }
+        
 
         stage("Docker install, image and run"){
             steps{
