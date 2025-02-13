@@ -6,6 +6,8 @@ COPY requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+COPY python.py .
+
+EXPOSE 5656
 
 CMD ["python", "python.py"]
