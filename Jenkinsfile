@@ -38,8 +38,8 @@ pipeline{
             }
         }
 
-        stage{
-            steps("docker push"){
+        stage("docker push"){
+            steps{
             
 withDockerRegistry(credentialsId: 'DOC_CRED', url: 'https://index.docker.io/v1/') {
                 sh " docker push umarsharief07/ultimate-cicd:${BUILD_NUMBER}"
