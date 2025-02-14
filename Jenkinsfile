@@ -9,9 +9,8 @@ pipeline{
                 checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/Umarsharief-07/python-new.git']])
 
             }
-        }
+     }
     
-        
         stage('SonarQube Analysis') {
             steps {
                 script {
@@ -69,9 +68,13 @@ withDockerRegistry(credentialsId: 'DOC_CRED', url: 'https://index.docker.io/v1/'
          }
       }
     }
-    post {
+     post {
         always {
-            cleanWs()
+            // Ensure cleanWs is inside a node block
+            node {
+                cleanWs()
+            }
         }
-    }   
+    }
 }
+
