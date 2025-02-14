@@ -11,6 +11,7 @@ pipeline{
 
             }
         }
+    
         
            stage('SonarQube Analysis') {
             steps {
@@ -27,6 +28,9 @@ pipeline{
                                 -Dsonar.login=${SONAR_TOKEN}  // Use SonarQube token from Jenkins credentials
                         """
                     }
+                }
+            }
+           }
         
 
 
@@ -68,4 +72,5 @@ withDockerRegistry(credentialsId: 'DOC_CRED', url: 'https://index.docker.io/v1/'
     }
  }
     }
-}    
+
+
