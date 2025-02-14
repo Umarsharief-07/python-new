@@ -63,8 +63,10 @@ pipeline {
 
     post {
         always {
-            // Clean workspace after the build completes
-            cleanWs() // No need for a 'node' block since 'agent any' is already defined
+            // Clean workspace inside a node block
+            node {
+                cleanWs()  // Clean workspace after the build completes
+            }
         }
     }
 }
