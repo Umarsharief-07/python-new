@@ -2,7 +2,7 @@ pipeline{
     agent any
      environment {
         SONARQUBE = 'SONAR_CRED'  // The name of your SonarQube server as configured in Jenkins
-        SONAR_TOKEN = credentials('sonar-token')  // Jenkins credentials ID for SonarQube token
+        SONAR_TOKEN = credentials('SONAR_CRED')  // Jenkins credentials ID for SonarQube token
     }
     stages{
         stage("checkout"){
@@ -18,13 +18,13 @@ pipeline{
                 script {
                     // Run SonarQube analysis with SonarQube Scanner
                     withSonarQubeEnv(SONARQUBE) {
-                        sh """
-                           sonar-scanner \
-  -Dsonar.projectKey=My-Python-Project \
-  -Dsonar.sources=. \
-  -Dsonar.host.url=http://15.207.18.50:9000 \
-  -Dsonar.login=1621197688523f950854eb14c96f45ac7c807e1c
-                }
+                   sh """
+    sonar-scanner \
+        -Dsonar.projectKey=My-Python-Project \
+        -Dsonar.sources=. \
+        -Dsonar.host.url=http://15.207.18.50:9000 \
+        -Dsonar.login=1621197688523f950854eb14c96f45ac7c807e1c
+"""
             }
            }
         
