@@ -69,4 +69,9 @@ withDockerRegistry(credentialsId: 'DOC_CRED', url: 'https://index.docker.io/v1/'
          }
       }
     }
-}    
+    post {
+        always {
+            cleanWs()
+        }
+    }   
+}
