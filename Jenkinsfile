@@ -61,12 +61,10 @@ pipeline {
         }
     }
 
-    post {
+post {
         always {
-            // Clean workspace inside a node block
-            node {
-                cleanWs()  // Clean workspace after the build completes
-            }
+            
+            cleanWs()
         }
     }
 }
