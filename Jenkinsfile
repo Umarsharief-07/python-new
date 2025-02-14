@@ -6,8 +6,7 @@ pipeline{
                 checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/Umarsharief-07/python-new.git']])
 
             }
-        }
-
+        
         stage("Code analysis"){
             environment{
                 SONAR_URL = 
@@ -19,6 +18,8 @@ pipeline{
         }        
 
     
+        
+
 
         stage("Docker install, image and run"){
             steps{

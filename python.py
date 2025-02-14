@@ -1,9 +1,13 @@
-# app.py
+from flask import Flask
 
-def greet(name):
-    return f"Hello, {name}!"
+app = Flask(__name__)
 
-if __name__ == "__main__":
-    name = input("Enter your name: ")
-    print(greet(name))
+@app.route('/')
+def hello_world():
+    return 'Umar sharief shaik'
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)
+
+
 
