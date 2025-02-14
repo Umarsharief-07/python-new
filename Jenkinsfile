@@ -1,12 +1,12 @@
 pipeline {
     agent any
 
-    environment {
-        SONAR_TOKEN = credentials('sonar-token')  // Jenkins credentials ID for SonarQube token
-    }
+     environment {
+        SCANNER_HOME=tool 'sonar-scanner'
+     }
 
     stages {
-        stage("Checkout") {
+        stage('Checkout') {
             steps {
                 checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/Umarsharief-07/python-new.git']])
             }
@@ -16,26 +16,18 @@ pipeline {
             steps {
                 script {
                     // Run SonarQube analysis with SonarQube Scanner
-                    withSonarQubeEnv('SonarQube') { // Use the SonarQube configuration name here
+                    withSonarQubeEnv('sonar-server') { // Use the SonarQube configuration name here
                         sh """
-                            stage('SonarQube Analysis') {
-            steps {
-                script {
-                    // Run SonarQube analysis with SonarQube Scanner
-                    withSonarQubeEnv('SonarQube') { // Use the SonarQube configuration name here
-                        sh """
-                            sonar-scanner \
-  -Dsonar.projectKey=My-Python-Project \
-  -Dsonar.sources=. \
-  -Dsonar.host.url=http://13.232.3.239:9000 \
-  -Dsonar.login=1621197688523f950854eb14c96f45ac7c807e1c
-                        """
+                            $SCANNER_HOME/bin/sonar-scanner \
+                           -Dsonar.projectKey=My-Python-Project \
+                           -Dsonar.sources=. 
+                           """
                     }
                 }
             }
         }
 
-        stage("Docker Install, Image Build and Run") {
+        stage('Docker Install, Image Build and Run') {
             steps {
                 sh "sudo apt-get update"
                 sh "sudo apt-get install -y ca-certificates curl"
@@ -65,12 +57,12 @@ pipeline {
                 }
             }
         }
-    }
+}
 
-// post {
-//         always {
-            
-//             cleanWs()
-//         }
-//     }
+post {
+      always {
+          
+            cleanWs()
+        }
+    }
 }
