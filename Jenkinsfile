@@ -6,6 +6,7 @@ pipeline{
                 checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/Umarsharief-07/python-new.git']])
 
             }
+        }
         
         stage("Code analysis"){
             environment{
@@ -14,10 +15,10 @@ pipeline{
             steps{
             withCredentials([string(credentialsId: 'Sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
             sh 'cd  python-new/spring-boot-app && mvn sonar:sonar -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=$(SONAR_URL) '
-}
+            }
         }        
 
-    
+    }
         
 
 
@@ -60,4 +61,3 @@ withDockerRegistry(credentialsId: 'DOC_CRED', url: 'https://index.docker.io/v1/'
  }
     }
 }    
-
