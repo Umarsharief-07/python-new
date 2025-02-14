@@ -12,7 +12,7 @@ pipeline{
         }
     
         
-           stage('SonarQube Analysis') {
+        stage('SonarQube Analysis') {
             steps {
                 script {
                     // Run SonarQube analysis with SonarQube Scanner
@@ -65,9 +65,8 @@ pipeline{
 withDockerRegistry(credentialsId: 'DOC_CRED', url: 'https://index.docker.io/v1/') {
                 sh " docker push umarsharief07/ultimate-cicd:${BUILD_NUMBER}"
     
-}
+             }
+         }
+      }
     }
- }
-    }
-}
-    
+}    
