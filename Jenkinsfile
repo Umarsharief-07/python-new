@@ -19,15 +19,11 @@ pipeline{
                     // Run SonarQube analysis with SonarQube Scanner
                     withSonarQubeEnv(SONARQUBE) {
                         sh """
-                            sonar-scanner \
-                                -Dsonar.projectKey=my-python-project \
-                                -Dsonar.projectName=My Python Project \
-                                -Dsonar.sources=. \
-                                -Dsonar.language=py \
-                                -Dsonar.python.version=3  \
-                                -Dsonar.login=${SONAR_TOKEN}  // Use SonarQube token from Jenkins credentials
-                        """
-                    }
+                           sonar-scanner \
+  -Dsonar.projectKey=My-Python-Project \
+  -Dsonar.sources=. \
+  -Dsonar.host.url=http://15.207.18.50:9000 \
+  -Dsonar.login=1621197688523f950854eb14c96f45ac7c807e1c
                 }
             }
            }
