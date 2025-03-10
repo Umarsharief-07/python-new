@@ -19,13 +19,21 @@ pipeline {
                     withSonarQubeEnv('sonar-server') { // Use the SonarQube configuration name here
                         sh """
                             $SCANNER_HOME/bin/sonar-scanner \
-                           -Dsonar.projectKey=My-Python-Project \
+                           -Dsonar.projectKey=python-n \
                            -Dsonar.sources=. 
                            """
                     }
                 }
             }
         }
+        stage("Quality Gate") {
+            steps {
+              timeout(time: 20, unit: 'MINUTES') {
+                waitForQualityGate abortPipeline: true // we need to have webhook to do in sonarqube > project settings > webhook 
+                } 
+            }
+        }
+        
 
         stage('Docker Install, Image Build and Run') {
             steps {
@@ -44,10 +52,16 @@ pipeline {
                     sudo usermod -aG docker ubuntu
                 '''
                 sh "sudo chmod 777 /var/run/docker.sock"
-                sh "docker build -t umarsharief07/ultimate-cicd:${BUILD_NUMBER} ."
+                sh "docker build -t new:n ."
                 sh "docker stop python && docker rm python"
-                sh "docker run -d --name python -p 5757:5000 umarsharief07/ultimate-cicd:${BUILD_NUMBER}"
+                sh "docker run -d --name python -p 5757:5000 new:n"
             }
+        }
+        stage("TRIVY Image Scan") { 
+            steps {
+                sh 'trivy image new:n > trivyimage.txt'
+                archiveArtifacts artifacts: 'trivyimage.txt', allowEmptyArchive: true     
+                } 
         }
 
         stage("Docker Push") {
