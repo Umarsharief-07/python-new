@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 import logging
 
 # Initialize Flask app
@@ -7,7 +7,9 @@ app = Flask(__name__)
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
-# Duplicate function - Intentional Code Duplication
+# Intentional security issue: Exposing API key in logs
+API_KEY = "12345-SECRET-KEY"  # Hardcoded API key (bad practice)
+
 def get_message():
     return "Umar Sharief Shaik"
 
@@ -23,6 +25,29 @@ def hello_world():
 def duplicate():
     app.logger.info("Duplicate endpoint accessed")
     return jsonify(message=get_message_duplicate())
+
+@app.route('/greet/<name>')
+def greet(name):
+    app.logger.info(f"Greet endpoint accessed with name: {name}")
+    return jsonify(message=f"Hello, {name}!")
+
+@app.route('/sum', methods=['POST'])
+def calculate_sum():
+    try:
+        data = request.get_json()
+        num1 = data.get('num1', 0)
+        num2 = data.get('num2', 0)
+        result = num1 + num2
+        app.logger.info(f"Sum calculated: {num1} + {num2} = {result}")
+        return jsonify(sum=result)
+    except Exception as e:
+        app.logger.error(f"Error in sum calculation: {str(e)}")
+        return jsonify(error="Invalid input"), 400
+
+@app.route('/log_api_key')
+def log_api_key():
+    app.logger.warning(f"API Key accessed: {API_KEY}")  # Security issue
+    return jsonify(message="API Key logged (bad practice!)")
 
 # Intentional small issue: Debug mode should not be True in production
 if __name__ == '__main__':
