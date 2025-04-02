@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request
 import logging
+import os
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -7,14 +8,18 @@ app = Flask(__name__)
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
-# Intentional security issue: Exposing API key in logs
-API_KEY = "12345-SECRET-KEY"  # Hardcoded API key (bad practice)
+# Hardcoded API key (security issue)
+API_KEY = "12345-SECRET-KEY"
 
 def get_message():
     return "Umar Sharief Shaik"
 
 def get_message_duplicate():
     return "Umar Sharief Shaik"  # Duplicate function
+
+def insecure_eval(expression):
+    """Dangerous function: Executes arbitrary code"""
+    return eval(expression)  # Security vulnerability (code injection)
 
 @app.route('/')
 def hello_world():
@@ -48,6 +53,16 @@ def calculate_sum():
 def log_api_key():
     app.logger.warning(f"API Key accessed: {API_KEY}")  # Security issue
     return jsonify(message="API Key logged (bad practice!)")
+
+@app.route('/execute', methods=['POST'])
+def execute_code():
+    try:
+        data = request.get_json()
+        expression = data.get('expression', '')
+        result = insecure_eval(expression)  # Code injection vulnerability
+        return jsonify(result=result)
+    except Exception as e:
+        return jsonify(error=str(e)), 400
 
 # Intentional small issue: Debug mode should not be True in production
 if __name__ == '__main__':
