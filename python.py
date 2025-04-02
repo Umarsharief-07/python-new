@@ -11,9 +11,10 @@ logging.basicConfig(level=logging.INFO)
 # Hardcoded API key (security issue)
 API_KEY = "12345-SECRET-KEY"
 
-# Bug: Unused variable
+# Bug 1: Unused variable
 unused_variable = "This variable is never used"
 
+# Bug 2: Incorrect function call (potential NameError)
 def get_message():
     return "Umar Sharief Shaik"
 
@@ -27,47 +28,33 @@ def insecure_eval(expression):
 @app.route('/')
 def hello_world():
     app.logger.info("Root endpoint accessed")
-    return jsonify(message=get_message())
+    return jsonify(message=get_message_typo())  # Bug: Undefined function (should be get_message())
 
 @app.route('/duplicate')
 def duplicate():
     app.logger.info("Duplicate endpoint accessed")
     return jsonify(message=get_message_duplicate())
 
-@app.route('/greet/<name>')
-def greet(name):
-    app.logger.info(f"Greet endpoint accessed with name: {name}")
-    return jsonify(message=f"Hello, {name}!")
+# Bug 3: Missing return statement
+@app.route('/missing_return')
+def missing_return():
+    message = "This function does not return anything"  # Missing return statement
 
-@app.route('/sum', methods=['POST'])
-def calculate_sum():
+# Bug 4: Infinite loop
+@app.route('/infinite_loop')
+def infinite_loop():
+    while True:
+        pass  # This will cause the request to hang indefinitely
+
+# Bug 5: Incorrect exception handling
+@app.route('/error_handling', methods=['GET'])
+def error_handling():
     try:
-        data = request.get_json()
-        num1 = data.get('num1', 0)
-        num2 = data.get('num2', 0)
-        result = num1 + num2
-        app.logger.info(f"Sum calculated: {num1} + {num2} = {result}")
-        return jsonify(sum=result)
-    except Exception as e:
-        app.logger.error(f"Error in sum calculation: {str(e)}")
-        return jsonify(error="Invalid input"), 400
+        1 / 0  # Intentional error
+    except:
+        return "Error occurred", 200  # Issue: Returns 200 instead of an error code
 
-@app.route('/log_api_key')
-def log_api_key():
-    app.logger.warning(f"API Key accessed: {API_KEY}")  # Security issue
-    return jsonify(message="API Key logged (bad practice!)")
-
-@app.route('/execute', methods=['POST'])
-def execute_code():
-    try:
-        data = request.get_json()
-        expression = data.get('expression', '')
-        result = insecure_eval(expression)  # Code injection vulnerability
-        return jsonify(result=result)
-    except Exception as e:
-        return jsonify(error=str(e)), 400
-
-# Bug: Division by zero potential
+# Bug 6: Division by zero potential
 @app.route('/divide', methods=['POST'])
 def divide_numbers():
     try:
@@ -79,41 +66,30 @@ def divide_numbers():
     except Exception as e:
         return jsonify(error=str(e)), 400
 
-# Vulnerability: OS command injection
-@app.route('/run', methods=['POST'])
-def run_command():
-    command = request.get_json().get('command', '')
-    output = os.popen(command).read()  # Security issue: Executes arbitrary system commands
-    return jsonify(output=output)
+# Bug 7: Misuse of list index
+@app.route('/list_index', methods=['GET'])
+def list_index():
+    items = ["apple", "banana"]
+    return jsonify(item=items[5])  # IndexError: List index out of range
 
-# Bug: Incorrect error handling
-@app.route('/error_handling', methods=['GET'])
-def error_handling():
-    try:
-        1 / 0  # Intentional error
-    except:
-        return "Error occurred", 200  # Issue: Returns 200 instead of an error code
+# Bug 8: Undefined variable usage
+@app.route('/undefined_variable', methods=['GET'])
+def undefined_variable():
+    return jsonify(message=undefined_var)  # NameError: undefined_var is not defined
 
-# Security Hotspot: Hardcoded credentials
-USERNAME = "admin"
-PASSWORD = "password123"  # Security issue
+# Bug 9: JSON key error
+@app.route('/json_key', methods=['POST'])
+def json_key_error():
+    data = request.get_json()
+    return jsonify(value=data['missing_key'])  # KeyError: 'missing_key' not found
 
-# Code Smell: Redundant condition
-@app.route('/check_status', methods=['GET'])
-def check_status():
-    status = request.args.get('status', 'ok')
-    if status == "ok":
-        return jsonify(message="Everything is fine")
-    elif status == "ok":  # Redundant condition
-        return jsonify(message="Still fine")
-    else:
-        return jsonify(message="Something is wrong")
-
-# Code Smell: Unnecessary list comprehension
-@app.route('/list_comprehension', methods=['GET'])
-def list_comprehension():
-    numbers = [x for x in range(10)]  # Can be replaced with list(range(10))
-    return jsonify(numbers=numbers)
+# Bug 10: Incorrect boolean condition
+@app.route('/bool_check', methods=['GET'])
+def bool_check():
+    value = None
+    if value == True:  # Bug: 'is' should be used for comparison with None
+        return jsonify(message="True value")
+    return jsonify(message="False value")
 
 # Intentional small issue: Debug mode should not be True in production
 if __name__ == '__main__':
