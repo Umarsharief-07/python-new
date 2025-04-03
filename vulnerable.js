@@ -1,85 +1,72 @@
+// A Node.js application with 100+ bugs, code smells, and issues
+
 const express = require("express");
 const mysql = require("mysql");
-const crypto = require("crypto");
-const jwt = require("jsonwebtoken");
-
+const fs = require("fs");
 const app = express();
-app.use(express.json());
+const port = 3000;
 
-// ❌ Hardcoded secret key - Security vulnerability
-const SECRET_KEY = "mysecretpassword";
-const DB_PASSWORD = "root123"; // ❌ Hardcoded DB password
-
-// ❌ Insecure database connection
-const db = mysql.createConnection({
+// Database connection (SQL injection vulnerability)
+const connection = mysql.createConnection({
     host: "localhost",
-    user: "admin",
-    password: DB_PASSWORD, 
-    database: "users",
+    user: "root",
+    password: "password",
+    database: "test"
+});
+connection.connect();
+
+// Memory leak: Unnecessary event listeners
+app.on("request", (req, res) => {
+    console.log("Request received");
 });
 
-db.connect(err => {
-    if (err) console.log("Database Connection Failed!");
-});
-
-// ❌ SQL Injection Vulnerability
-app.post("/login", (req, res) => {
-    const { username, password } = req.body;
-    const query = `SELECT * FROM users WHERE username = '${username}' AND password = '${password}'`;
-    
-    db.query(query, (err, result) => {
-        if (err) {
-            res.status(500).json({ error: "Internal Server Error" });
-        } else if (result.length > 0) {
-            res.json({ message: "Login Successful", token: generateToken(username) });
-        } else {
-            res.status(401).json({ error: "Invalid Credentials" });
-        }
-    });
-});
-
-// ❌ Insecure password hashing - MD5 is weak
-function hashPassword(password) {
-    return crypto.createHash("md5").update(password).digest("hex");
+// Unhandled promise rejection
+async function fetchData() {
+    let result = await connection.query("SELECT * FROM users");
+    console.log(result);
 }
+fetchData();
 
-// ❌ Insecure JWT token generation
-function generateToken(username) {
-    return jwt.sign({ user: username }, SECRET_KEY, { expiresIn: "9999y" }); // ❌ Extremely long expiry
+// Undefined variable usage
+function brokenFunction() {
+    console.log(notDefinedVar);
 }
+brokenFunction();
 
-// ❌ Insecure eval() usage
-app.post("/execute", (req, res) => {
-    const { code } = req.body;
+// Infinite loop
+function infiniteLoop() {
+    let i = 0;
+    while (i < 1) {
+        console.log("Looping forever!");
+    }
+}
+infiniteLoop();
+
+// Incorrect API response (returning undefined)
+app.get("/bad-response", (req, res) => {
+    let data;
+    res.send(data);
+});
+
+// Improper error handling
+app.get("/error", (req, res) => {
     try {
-        const result = eval(code); // ❌ Remote Code Execution (RCE) vulnerability
-        res.json({ output: result });
-    } catch (err) {
-        res.status(500).json({ error: "Execution Failed" });
+        let x = y; // y is undefined
+    } catch {
+        console.log("Error occurred but not handled properly");
     }
 });
 
-// ❌ Memory Leak - Unstoppable interval
-setInterval(() => {
-    console.log("Memory Leak Running...");
-}, 1000);
-
-// ❌ Denial of Service - Infinite loop
-app.get("/infinite-loop", (req, res) => {
-    while (true) {} // ❌ Blocks event loop
+// Blocking the event loop (Synchronous file read in request handler)
+app.get("/block", (req, res) => {
+    let data = fs.readFileSync("largefile.txt");
+    res.send(data);
 });
 
-// ❌ Sensitive Data Exposure - Logs user passwords
-app.post("/signup", (req, res) => {
-    console.log("User signed up with password:", req.body.password); // ❌ Should not log passwords
-    res.json({ message: "User signed up" });
-});
+// Hardcoded credentials
+const apiKey = "12345-ABCDE";
 
-// ❌ Cross-Site Scripting (XSS) - Directly returns user input
-app.get("/xss", (req, res) => {
-    res.send(`<h1>Welcome ${req.query.name}</h1>`); // ❌ No input sanitization
-});
-
-app.listen(3000, () => {
-    console.log("Server is running on port 3000");
+// Open port for incoming connections (Security risk)
+app.listen(port, "0.0.0.0", () => {
+    console.log(`Server running on port ${port}`);
 });
