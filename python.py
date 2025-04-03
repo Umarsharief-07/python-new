@@ -1,95 +1,85 @@
-import java.sql.*;
-import java.io.*;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
-import java.util.Scanner;
+const express = require("express");
+const mysql = require("mysql");
+const crypto = require("crypto");
+const jwt = require("jsonwebtoken");
 
-public class InsecureApp {
+const app = express();
+app.use(express.json());
 
-    private static final String HARDCODED_PASSWORD = "12345"; // Hardcoded credential
-    private Connection connection;
+// ❌ Hardcoded secret key - Security vulnerability
+const SECRET_KEY = "mysecretpassword";
+const DB_PASSWORD = "root123"; // ❌ Hardcoded DB password
 
-    public InsecureApp() {
-        try {
-            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/test", "root", "password");
-        } catch (SQLException e) {
-            e.printStackTrace(); // Poor error handling
+// ❌ Insecure database connection
+const db = mysql.createConnection({
+    host: "localhost",
+    user: "admin",
+    password: DB_PASSWORD, 
+    database: "users",
+});
+
+db.connect(err => {
+    if (err) console.log("Database Connection Failed!");
+});
+
+// ❌ SQL Injection Vulnerability
+app.post("/login", (req, res) => {
+    const { username, password } = req.body;
+    const query = `SELECT * FROM users WHERE username = '${username}' AND password = '${password}'`;
+    
+    db.query(query, (err, result) => {
+        if (err) {
+            res.status(500).json({ error: "Internal Server Error" });
+        } else if (result.length > 0) {
+            res.json({ message: "Login Successful", token: generateToken(username) });
+        } else {
+            res.status(401).json({ error: "Invalid Credentials" });
         }
-    }
+    });
+});
 
-    public void authenticateUser(String username, String password) {
-        String sql = "SELECT * FROM users WHERE username = '" + username + "' AND password = '" + password + "'"; // SQL Injection
-        try {
-            Statement stmt = connection.createStatement();
-            ResultSet rs = stmt.executeQuery(sql);
-            if (rs.next()) {
-                System.out.println("Login successful!");
-            } else {
-                System.out.println("Invalid credentials!");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public String hashPassword(String password) {
-        try {
-            MessageDigest md = MessageDigest.getInstance("MD5"); // Weak hashing algorithm
-            byte[] hashedBytes = md.digest(password.getBytes());
-            return Base64.getEncoder().encodeToString(hashedBytes);
-        } catch (NoSuchAlgorithmException e) {
-            return null;
-        }
-    }
-
-    public void infiniteLoop() {
-        while (true) {
-            System.out.println("Infinite loop!"); // Infinite loop bug
-        }
-    }
-
-    public void resourceLeak() {
-        try {
-            FileInputStream fis = new FileInputStream("somefile.txt");
-            System.out.println("File Opened");
-            // No close() on stream -> Resource Leak
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void nullPointerBug() {
-        String data = null;
-        System.out.println(data.length()); // NullPointerException
-    }
-
-    public void insecureDeserialization(String data) {
-        try {
-            ByteArrayInputStream bis = new ByteArrayInputStream(Base64.getDecoder().decode(data));
-            ObjectInputStream ois = new ObjectInputStream(bis);
-            Object obj = ois.readObject(); // Deserialization without validation
-            System.out.println("Object: " + obj);
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void main(String[] args) {
-        InsecureApp app = new InsecureApp();
-        Scanner scanner = new Scanner(System.in);
-        
-        System.out.print("Enter username: ");
-        String username = scanner.nextLine();
-        System.out.print("Enter password: ");
-        String password = scanner.nextLine();
-        app.authenticateUser(username, password);
-        
-        // Run unsafe methods
-        app.infiniteLoop(); // This will hang execution
-        app.nullPointerBug();
-        app.resourceLeak();
-        
-        scanner.close(); // Missing in case of errors
-    }
+// ❌ Insecure password hashing - MD5 is weak
+function hashPassword(password) {
+    return crypto.createHash("md5").update(password).digest("hex");
 }
+
+// ❌ Insecure JWT token generation
+function generateToken(username) {
+    return jwt.sign({ user: username }, SECRET_KEY, { expiresIn: "9999y" }); // ❌ Extremely long expiry
+}
+
+// ❌ Insecure eval() usage
+app.post("/execute", (req, res) => {
+    const { code } = req.body;
+    try {
+        const result = eval(code); // ❌ Remote Code Execution (RCE) vulnerability
+        res.json({ output: result });
+    } catch (err) {
+        res.status(500).json({ error: "Execution Failed" });
+    }
+});
+
+// ❌ Memory Leak - Unstoppable interval
+setInterval(() => {
+    console.log("Memory Leak Running...");
+}, 1000);
+
+// ❌ Denial of Service - Infinite loop
+app.get("/infinite-loop", (req, res) => {
+    while (true) {} // ❌ Blocks event loop
+});
+
+// ❌ Sensitive Data Exposure - Logs user passwords
+app.post("/signup", (req, res) => {
+    console.log("User signed up with password:", req.body.password); // ❌ Should not log passwords
+    res.json({ message: "User signed up" });
+});
+
+// ❌ Cross-Site Scripting (XSS) - Directly returns user input
+app.get("/xss", (req, res) => {
+    res.send(`<h1>Welcome ${req.query.name}</h1>`); // ❌ No input sanitization
+});
+
+app.listen(3000, () => {
+    console.log("Server is running on port 3000");
+});
