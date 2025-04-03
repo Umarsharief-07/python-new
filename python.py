@@ -8,89 +8,79 @@ app = Flask(__name__)
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
-# Hardcoded API key (security issue)
-API_KEY = "12345-SECRET-KEY"
+# Secure API key handling (removed hardcoded key, use env variables instead)
+API_KEY = os.getenv("API_KEY", "default-key")
 
-# Bug 1: Unused variable
-unused_variable = "This variable is never used"
-
-# Bug 2: Incorrect function call (potential NameError)
 def get_message():
     return "Umar Sharief Shaik"
 
 def get_message_duplicate():
-    return "Umar Sharief Shaik"  # Duplicate function
-
-def insecure_eval(expression):
-    """Dangerous function: Executes arbitrary code"""
-    return eval(expression)  # Security vulnerability (code injection)
+    return "Umar Sharief Shaik"
 
 @app.route('/')
 def hello_world():
     app.logger.info("Root endpoint accessed")
-    return jsonify(message=get_message_typo())  # Bug: Undefined function (should be get_message())
+    return jsonify(message=get_message())  # Fixed function name
 
 @app.route('/duplicate')
 def duplicate():
     app.logger.info("Duplicate endpoint accessed")
     return jsonify(message=get_message_duplicate())
 
-# Bug 3: Missing return statement
 @app.route('/missing_return')
 def missing_return():
-    message = "This function does not return anything"  # Missing return statement
+    message = "This function now returns a response"
+    return jsonify(message=message)
 
-# Bug 4: Infinite loop
-@app.route('/infinite_loop')
-def infinite_loop():
-    while True:
-        pass  # This will cause the request to hang indefinitely
+@app.route('/safe_divide', methods=['POST'])
+def safe_divide():
+    try:
+        data = request.get_json()
+        num1 = data.get('num1', 1)
+        num2 = data.get('num2', 1)  # Default to 1 to prevent division by zero
+        if num2 == 0:
+            raise ValueError("Cannot divide by zero")
+        result = num1 / num2
+        return jsonify(result=result)
+    except ValueError as ve:
+        return jsonify(error=str(ve)), 400
+    except Exception as e:
+        return jsonify(error=str(e)), 400
 
-# Bug 5: Incorrect exception handling
+@app.route('/list_index', methods=['GET'])
+def list_index():
+    items = ["apple", "banana"]
+    try:
+        return jsonify(item=items[1])  # Fixed: Accessing a valid index
+    except IndexError:
+        return jsonify(error="Index out of range"), 400
+
+@app.route('/undefined_variable', methods=['GET'])
+def undefined_variable():
+    defined_var = "Now defined"
+    return jsonify(message=defined_var)
+
+@app.route('/json_key', methods=['POST'])
+def json_key_error():
+    data = request.get_json()
+    if 'missing_key' not in data:
+        return jsonify(error="Missing key in JSON request"), 400
+    return jsonify(value=data['missing_key'])
+
+@app.route('/bool_check', methods=['GET'])
+def bool_check():
+    value = None
+    if value is True:  # Fixed improper comparison
+        return jsonify(message="True value")
+    return jsonify(message="False value")
+
+# Secure exception handling
 @app.route('/error_handling', methods=['GET'])
 def error_handling():
     try:
         1 / 0  # Intentional error
-    except:
-        return "Error occurred", 200  # Issue: Returns 200 instead of an error code
+    except ZeroDivisionError:
+        return jsonify(error="Division by zero is not allowed"), 400
 
-# Bug 6: Division by zero potential
-@app.route('/divide', methods=['POST'])
-def divide_numbers():
-    try:
-        data = request.get_json()
-        num1 = data.get('num1', 1)
-        num2 = data.get('num2', 0)  # Issue: Possible division by zero
-        result = num1 / num2
-        return jsonify(result=result)
-    except Exception as e:
-        return jsonify(error=str(e)), 400
-
-# Bug 7: Misuse of list index
-@app.route('/list_index', methods=['GET'])
-def list_index():
-    items = ["apple", "banana"]
-    return jsonify(item=items[5])  # IndexError: List index out of range
-
-# Bug 8: Undefined variable usage
-@app.route('/undefined_variable', methods=['GET'])
-def undefined_variable():
-    return jsonify(message=undefined_var)  # NameError: undefined_var is not defined
-
-# Bug 9: JSON key error
-@app.route('/json_key', methods=['POST'])
-def json_key_error():
-    data = request.get_json()
-    return jsonify(value=data['missing_key'])  # KeyError: 'missing_key' not found
-
-# Bug 10: Incorrect boolean condition
-@app.route('/bool_check', methods=['GET'])
-def bool_check():
-    value = None
-    if value == True:  # Bug: 'is' should be used for comparison with None
-        return jsonify(message="True value")
-    return jsonify(message="False value")
-
-# Intentional small issue: Debug mode should not be True in production
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)  # SonarQube should flag this
+    app.run(host='0.0.0.0', port=5000, debug=False)  # Secure debug mode
