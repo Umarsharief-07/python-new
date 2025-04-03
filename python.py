@@ -1,93 +1,95 @@
-import java.io.*;
 import java.sql.*;
+import java.io.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import java.util.Scanner;
 
-public class VulnerableApp {
-    
-    // 🔥 Security Risk: Hardcoded credentials
-    private static final String DB_USER = "admin";
-    private static final String DB_PASS = "password123";
+public class InsecureApp {
 
-    // 🔥 Insecure Logging (Logging Sensitive Info)
-    public static void log(String message) {
-        System.out.println("[LOG]: " + message); // ❌ Logs sensitive info
+    private static final String HARDCODED_PASSWORD = "12345"; // Hardcoded credential
+    private Connection connection;
+
+    public InsecureApp() {
+        try {
+            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/test", "root", "password");
+        } catch (SQLException e) {
+            e.printStackTrace(); // Poor error handling
+        }
     }
 
-    // ❌ SQL Injection Vulnerability
-    public static void sqlInjection(String username) {
-        try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/test", DB_USER, DB_PASS);
-             Statement stmt = conn.createStatement()) {
-
-            String query = "SELECT * FROM users WHERE username = '" + username + "'";  // ❌ SQL Injection risk
-            ResultSet rs = stmt.executeQuery(query);
-
-            while (rs.next()) {
-                System.out.println("User found: " + rs.getString("username"));
+    public void authenticateUser(String username, String password) {
+        String sql = "SELECT * FROM users WHERE username = '" + username + "' AND password = '" + password + "'"; // SQL Injection
+        try {
+            Statement stmt = connection.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+            if (rs.next()) {
+                System.out.println("Login successful!");
+            } else {
+                System.out.println("Invalid credentials!");
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    // ❌ Command Injection
-    public static void executeCommand(String command) throws IOException {
-        Runtime.getRuntime().exec(command); // 🔥 Security Risk: Allows arbitrary command execution
-    }
-
-    // ❌ Unsafe Deserialization (RCE Risk)
-    public static Object insecureDeserialization(byte[] data) throws IOException, ClassNotFoundException {
-        ByteArrayInputStream bis = new ByteArrayInputStream(data);
-        ObjectInputStream ois = new ObjectInputStream(bis);
-        return ois.readObject(); // 🔥 Security Risk: Arbitrary code execution possible
-    }
-
-    // ❌ Division by Zero
-    public static int divide(int a, int b) {
-        return a / b; // ❌ Crashes when b == 0
-    }
-
-    // ❌ Null Pointer Dereference
-    public static void nullPointerBug() {
-        String text = null;
-        System.out.println(text.length()); // ❌ NullPointerException
-    }
-
-    // ❌ Infinite Loop
-    public static void infiniteLoop() {
-        while (true) {  // ❌ DoS vulnerability
-            System.out.println("Looping forever...");
+    public String hashPassword(String password) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5"); // Weak hashing algorithm
+            byte[] hashedBytes = md.digest(password.getBytes());
+            return Base64.getEncoder().encodeToString(hashedBytes);
+        } catch (NoSuchAlgorithmException e) {
+            return null;
         }
     }
 
-    // ❌ Array Index Out of Bounds
-    public static void arrayOutOfBounds() {
-        int[] arr = {1, 2, 3};
-        System.out.println(arr[5]); // ❌ IndexOutOfBoundsException
+    public void infiniteLoop() {
+        while (true) {
+            System.out.println("Infinite loop!"); // Infinite loop bug
+        }
+    }
+
+    public void resourceLeak() {
+        try {
+            FileInputStream fis = new FileInputStream("somefile.txt");
+            System.out.println("File Opened");
+            // No close() on stream -> Resource Leak
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void nullPointerBug() {
+        String data = null;
+        System.out.println(data.length()); // NullPointerException
+    }
+
+    public void insecureDeserialization(String data) {
+        try {
+            ByteArrayInputStream bis = new ByteArrayInputStream(Base64.getDecoder().decode(data));
+            ObjectInputStream ois = new ObjectInputStream(bis);
+            Object obj = ois.readObject(); // Deserialization without validation
+            System.out.println("Object: " + obj);
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void main(String[] args) {
-        log("Starting application...");
-
-        // SQL Injection Demo
+        InsecureApp app = new InsecureApp();
         Scanner scanner = new Scanner(System.in);
-        System.out.println("Enter username:");
-        String userInput = scanner.nextLine();
-        sqlInjection(userInput);
-
-        // Call unsafe functions
-        try {
-            executeCommand("rm -rf /"); // ❌ DANGEROUS
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            System.out.println(divide(10, 0)); // ❌ Will crash
-        } catch (Exception e) {
-            log("Error: " + e.getMessage());
-        }
-
-        nullPointerBug();
-        arrayOutOfBounds();
+        
+        System.out.print("Enter username: ");
+        String username = scanner.nextLine();
+        System.out.print("Enter password: ");
+        String password = scanner.nextLine();
+        app.authenticateUser(username, password);
+        
+        // Run unsafe methods
+        app.infiniteLoop(); // This will hang execution
+        app.nullPointerBug();
+        app.resourceLeak();
+        
+        scanner.close(); // Missing in case of errors
     }
 }
