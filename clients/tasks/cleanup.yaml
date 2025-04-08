@@ -3,6 +3,7 @@
   shell: |
     docker stop {{ container_name }} || true
     docker rm {{ container_name }} || true
-    docker rmi {{ ecr_url }}:{{ image_name }} 
+    docker rmi {{ ecr_url }}:{{ image_name }} || true
+  ignore_errors: yes
   args:
     executable: /bin/bash
