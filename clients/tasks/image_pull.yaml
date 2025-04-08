@@ -1,0 +1,13 @@
+---
+- name: Authenticate with AWS ECR
+  shell: |
+    aws ecr get-login-password --region {{ aws_region }} \
+    | docker login --username AWS --password-stdin {{ ecr_url }}
+  environment:
+    AWS_ACCESS_KEY_ID: "{{ aws_access_key }}"
+    AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+    AWS_DEFAULT_REGION: "{{ aws_region }}"
+
+- name: Pull the latest image from ECR
+  shell: "docker pull {{ ecr_url }}:{{ image_name }}"
+

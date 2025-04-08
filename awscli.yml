@@ -1,0 +1,57 @@
+- name: Install AWS CLI and configure it
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Install unzip and curl
+      ansible.builtin.apt:
+        name: [unzip, curl]
+        state: present
+        update_cache: yes
+
+    - name: Download AWS CLI zip
+      get_url:
+        url: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
+        dest: /tmp/awscliv2.zip
+
+    - name: Unzip AWS CLI
+      unarchive:
+        src: /tmp/awscliv2.zip
+        dest: /tmp
+        remote_src: yes
+
+    - name: Install AWS CLI
+      shell: /tmp/aws/install --update
+      args:
+        creates: /usr/local/bin/aws
+
+    - name: Ensure .aws directory exists
+      file:
+        path: /home/ubuntu/.aws
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: '0700'
+
+    - name: Create AWS credentials file
+      copy:
+        dest: /home/ubuntu/.aws/credentials
+        content: |
+          [default]
+          aws_access_key_id = {{ aws_access_key }}
+          aws_secret_access_key = {{ aws_secret_key }}
+        owner: ubuntu
+        group: ubuntu
+        mode: '0600'
+
+    - name: Create AWS config file
+      copy:
+        dest: /home/ubuntu/.aws/config
+        content: |
+          [default]
+          region = {{ aws_region }}
+          output = json
+        owner: ubuntu
+        group: ubuntu
+        mode: '0600'
+
