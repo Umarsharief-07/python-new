@@ -1,0 +1,8 @@
+---
+- name: Stop and remove existing container
+  shell: |
+    docker stop {{ container_name }} || true
+    docker rm {{ container_name }} || true
+    docker rmi {{ ecr_url }}:{{ image_name }} 
+  args:
+    executable: /bin/bash
