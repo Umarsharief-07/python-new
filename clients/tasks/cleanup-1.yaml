@@ -12,6 +12,6 @@
 
 - name: Remove an image
   community.docker.docker_image_remove:
-    name: "{{ container_name }}"
+    name: "{{ image_name }}"
       
 
