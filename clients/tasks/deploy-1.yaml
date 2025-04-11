@@ -1,0 +1,13 @@
+---
+- name: Template docker-compose
+  ansible.buildin.template:
+    src: docker-compose.yml.j2
+    dest: /root/docker-compose.yml
+
+- name: Run a conatiner
+  community.docker.docker_compose_v2_run:
+    service: app
+    command: /bin/bash -c "ls -lah"
+    chdir: /root
+    cleanup: false
+    detach: true

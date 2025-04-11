@@ -1,0 +1,7 @@
+---
+aws_region: "ap-south-1"
+ecr_url: 227421873986.dkr.ecr.ap-south-1.amazonaws.com/client-1
+image_name: "client-1"
+container_name: "client-1"
+exposed_port: 5001
+internal_port: 5000

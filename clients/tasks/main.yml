@@ -1,0 +1,12 @@
+---
+- name: CleaN-UP Image
+  import_tasks: cleanup-1.yaml
+
+- name: pull image from ecr
+  import_tasks: image_pull-1.yaml
+
+
+- name: deploy the conatiner
+  import_tasks: deploy-1.yaml 
+
+
