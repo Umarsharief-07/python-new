@@ -10,4 +10,4 @@
 
 - name: Pull image
   community.docker.docker_image_pull:
-    name: {{ ecr_url }}:{{ image_name }}
+    name: "{{ ecr_url }}:{{ image_name }}"
