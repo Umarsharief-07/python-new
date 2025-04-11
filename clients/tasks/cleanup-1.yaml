@@ -1,17 +1,17 @@
 ---
 - name: stop container 
   community.docker.docker_container:
-    name: {{ container_name }}
+    name: "{{ container_name }}"
     state: stopped
 
 - name: Remove container
   community.docker.docker_container:
-    name: {{ container_name }}
+    name: "{{ container_name }}"
     state: absent
 
 
 - name: Remove an image
   community.docker.docker_image_remove:
-    name: {{ container_name }}
+    name: "{{ container_name }}"
       
 
