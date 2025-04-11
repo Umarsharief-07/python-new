@@ -16,8 +16,10 @@
     state: stopped
   when:
     - container_info is defined
+    - "'containers' in container_info"
     - container_info.containers | length > 0
     - image_info is defined
+    - "'images' in image_info"
     - image_info.images | length > 0
 
 - name: Remove container if it exists and image is present
@@ -26,8 +28,10 @@
     state: absent
   when:
     - container_info is defined
+    - "'containers' in container_info"
     - container_info.containers | length > 0
     - image_info is defined
+    - "'images' in image_info"
     - image_info.images | length > 0
 
 - name: Remove image if it exists
@@ -36,7 +40,5 @@
     state: absent
   when:
     - image_info is defined
+    - "'images' in image_info"
     - image_info.images | length > 0
-
-      
-
