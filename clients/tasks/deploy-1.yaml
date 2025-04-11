@@ -4,7 +4,15 @@
     src: docker-compose.yml.j2
     dest: /root/docker-compose.yml
     
-- name: Start app service in detached mode
-  community.docker.docker_compose_v2:
-    project_src: /root
-    state: present
+- name: Start app service using docker compose (v2 preferred, fallback to v1)
+  block:
+    - name: Start app service with Docker Compose v2 plugin
+      community.docker.docker_compose_v2:
+        project_src: /root
+        state: present
+
+  rescue:
+    - name: Start app service with legacy docker-compose (v1 fallback)
+      community.docker.docker_compose:
+        project_src: /root
+        state: present
