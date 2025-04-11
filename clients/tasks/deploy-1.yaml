@@ -4,10 +4,10 @@
     src: docker-compose.yml.j2
     dest: /root/docker-compose.yml
 
-- name: Run a conatiner
+- name: Run a container
   community.docker.docker_compose_v2_run:
     service: app
     command: /bin/bash -c "ls -lah"
     chdir: /root
     cleanup: false
-    detach: true
+
