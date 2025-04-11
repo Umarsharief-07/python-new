@@ -1,17 +1,42 @@
----
-- name: stop container 
+- name: Gather container info
+  community.docker.docker_container_info:
+    name: "{{ container_name }}"
+  register: container_info
+  ignore_errors: true
+
+- name: Gather image info
+  community.docker.docker_image_info:
+    name: "{{ container_name }}"
+  register: image_info
+  ignore_errors: true
+
+- name: Stop container if it exists and image is present
   community.docker.docker_container:
     name: "{{ container_name }}"
     state: stopped
+  when:
+    - container_info is defined
+    - container_info.containers | length > 0
+    - image_info is defined
+    - image_info.images | length > 0
 
-- name: Remove container
+- name: Remove container if it exists and image is present
   community.docker.docker_container:
     name: "{{ container_name }}"
     state: absent
+  when:
+    - container_info is defined
+    - container_info.containers | length > 0
+    - image_info is defined
+    - image_info.images | length > 0
 
+- name: Remove image if it exists
+  community.docker.docker_image:
+    name: "{{ container_name }}"
+    state: absent
+  when:
+    - image_info is defined
+    - image_info.images | length > 0
 
-- name: Remove an image
-  community.docker.docker_image_remove:
-    name: "{{ image_name }}"
       
 
