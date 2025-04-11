@@ -1,4 +1,7 @@
 ---
+- name: python
+  import_tasks: python.yaml
+  
 - name: CleaN-UP Image
   import_tasks: cleanup-1.yaml
 
