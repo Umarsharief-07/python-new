@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.INFO)
 API_KEY = os.getenv("API_KEY", "default-key")
 
 def get_message():
-    return "Umar Sharief Shaika"
+    return "Umar Sharief Shaik"
 
 def get_message_duplicate():
     return "Umar Sharief Shaik"
