@@ -1,0 +1,9 @@
+version: "3"
+services:
+  app:
+    image: {{ ecr_url }}:{{ image_name }}
+    container_name: {{ container_name }}
+    restart: always
+    ports:
+      - "{{ exposed_port }}:{{ internal_port }}"
+

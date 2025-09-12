@@ -1,0 +1,33 @@
+---
+- name: Start new container using Docker Compose
+  template:
+    src: docker-compose.yml.j2
+    dest: /home/ubuntu/docker-compose.yml
+
+- name: Deploy the container
+  shell: "{{ item }}"
+  loop:
+    - docker compose up -d
+    - docker-compose up -d
+  args:
+    chdir: /home/ubuntu/
+    executable: /bin/bash
+  ignore_errors: yes
+
+- name: Get image ID of deployed image
+  shell: docker images -q {{ ecr_url }}:{{ image_name }}
+  register: deployed_image
+
+- name: Save deployed image ID to log
+  lineinfile:
+    path: /var/log/deployed_images.log
+    line: "{{ deployed_image.stdout }}"
+    create: yes
+    state: present
+  become: true  # Add this if /var/log requires root access
+
+- name: Remove docker-compose file after deployment
+  file:
+    path: /home/ubuntu/docker-compose.yml
+    state: absent
+
