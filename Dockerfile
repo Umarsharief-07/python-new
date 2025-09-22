@@ -4,7 +4,8 @@ WORKDIR /app
 
 COPY requirements.txt .
 
-RUN pip install --no-cache-dir -r requirements.txt
+# Fail on purpose
+RUN pip install --no-cache-dir -r requirements.txt && exit 1
 
 COPY python.py .
 
