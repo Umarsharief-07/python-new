@@ -7,7 +7,7 @@ COPY requirements.txt .
 # FAIL at build time on purpose
 RUN pip install --no-cache-dir -r requirements.txt 
 
-COPY python.py .
+COPY backend.py .
 
 EXPOSE 5000
 
