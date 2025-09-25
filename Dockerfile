@@ -5,7 +5,7 @@ WORKDIR /app
 COPY requirements.txt .
 
 # FAIL at build time on purpose
-RUN pip install --no-cache-dir -r requirements.txt && exit 1
+RUN pip install --no-cache-dir -r requirements.txt 
 
 COPY python.py .
 
